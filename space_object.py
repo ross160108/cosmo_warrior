@@ -86,7 +86,9 @@ class SpaceObject:
         self.x += config.speed[self.obj_type]  * math.cos(math.radians(self.angle))
         self.y += config.speed[self.obj_type]  * math.sin(math.radians(-self.angle))
 
-        
+        if self.x < 0 or self.x >= self.width or self.y < 0 or self.y >= self.height:
+            pass # TODO 
+
 
     def get_xy(self):
         

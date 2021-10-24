@@ -28,6 +28,8 @@ GAME_STATE_KEYS += ASTEROID_TYPES
 class Engine:
     #Engine('examples/game_state_good.txt', Player, GUI)
     def __init__(self, game_state_filename, player_class, gui_class):
+        self.debug = False
+
         # vars
         self.game_dict = {}
         self.bullets = []
@@ -39,11 +41,20 @@ class Engine:
             'upcoming_asteroid_small': [],
             'bullet' : [] #! TBD
         }
+
+        # TODO
+        '''
+        self.object_dict = {
+            'asteroid': [],
+            'upcoming_asteroid': [],
+            'bullet' : [] #! TBD
+        }
+        '''
         
         self.import_state(game_state_filename)
         
+        #self.export_state('./export_test.txt')
         
-        exit(1)
         self.player = player_class()
         self.GUI = gui_class(self.width, self.height)
 
@@ -97,6 +108,7 @@ class Engine:
     def is_numeric(self, key):
         if self.game_dict[key].isnumeric():
             self.game_dict[key] = int(self.game_dict[key])
+            return True
         else:
             #! code line 명시 필요  
             raise ValueError('Error: invalid data type in line <line number')
@@ -114,6 +126,7 @@ class Engine:
                 self.game_dict[key][1] = float(self.game_dict[key][1])
                 self.game_dict[key][2] = int(self.game_dict[key][2])
                 self.game_dict[key][3] = int(self.game_dict[key][3])
+                return True
             except:
                 #! code line 명시 필요  
                 raise ValueError('Error: invalid data type in line <line number')
@@ -150,13 +163,18 @@ class Engine:
                 self.is_valid_list(key)
                 self.object_dict[key].append( self.game_dict[key] )
 
-
-        print(self.object_dict)
-        exit(1)        
+        #! debug
+        #print(self.object_dict)
+        
         #* 2. 
 
     def export_state(self, game_state_filename):
+
+        #print(self.game_dict)
         pass
+
+
+        
         
         
         
@@ -178,23 +196,31 @@ class Engine:
 
         while True:
             # 1. Receive player input
-            
-            try:
-                key = inputimeout('', timeout=10)
-            except:
-                pass
+            if self.debug:
+                try:
+                    key = inputimeout('', timeout=10)
+                except:
+                    pass
 
-            # spaceship control
-            if key == 'w':           
-                spaceship.move_forward()
-            elif key == 'a':
-                spaceship.turn_left()
-            elif key == 'd':
-                spaceship.turn_right()
-            elif key == 'q':
-                break
-            key = None
-            
+                # spaceship control
+                if key == 'w':           
+                    spaceship.move_forward()
+                elif key == 'a':
+                    spaceship.turn_left()
+                elif key == 'd':
+                    spaceship.turn_right()
+                elif key == 's':
+                    pass # TODO : bullet
+                elif key == 'q':
+                    break
+                key = None
+            else:
+                thrust, left, right, bullet = self.player.action(spaceship, [], [], 200, 100)
+
+                if thrust:
+                    spaceship.move_forward()
+                elif left:
+                    spaceship.turn_left()
             # 2. Process game logic
             #obj1.move_forward()
             #obj2.move_forward()
