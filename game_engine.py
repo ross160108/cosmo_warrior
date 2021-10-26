@@ -15,135 +15,177 @@ GAME_STATE_KEYS = [
     'bullets_count',
     'upcoming_asteroids_count'
 ]
-ASTEROID_TYPES = [
+ITER_OBJECTS = [
     'upcoming_asteroid_small',
     'upcoming_asteroid_large',
     'asteroid_large',
+    'asteroid_small',
+    'bullet'
+]
+ALL_GAME_KEYS = GAME_STATE_KEYS + ITER_OBJECTS
+COUNT_PARAM = [
+    'asteroids_count',
+    'upcoming_asteroids_count',
+    'bullets_count'
+]
+CURRENT_ASTEROIDS = [
+    'asteroid_large',
     'asteroid_small'
 ]
-GAME_STATE_KEYS += ASTEROID_TYPES
+UPCOMING_ASTEROIDS = [
+    'upcoming_asteroid_small',
+    'upcoming_asteroid_large'
+]
 
 class Engine:
     #Engine('examples/game_state_good.txt', Player, GUI)
     def __init__(self, game_state_filename, player_class, gui_class):
         # vars
         self.game_dict = {}
-        self.bullets = []
+        #self.bullets = []
+        #self.asteroid_list = []
 
-        self.object_dict = {
-            'asteroid_large': [],
-            'asteroid_small': [],
-            'upcoming_asteroid_large': [],
-            'upcoming_asteroid_small': [],
-            'bullet' : [] #! TBD
-        }
-        
         self.import_state(game_state_filename)
         
-        
-        
         self.player = player_class()
+        self.width = self.game_dict['width']
+        self.height = self.game_dict['height']
         self.GUI = gui_class(self.width, self.height)
 
-
-    def parse_args(self, file_path):
-        # Enter your code here
+    def import_state(self, game_state_filename):
+        lines = []
         try:
-            f = open(file_path, 'r')
+            f = open(game_state_filename, 'r')
             while True:
                 data = f.readline()
                 if not data:
                     break
-                for_key = data.split()[0]
-                
-                if len(data.split()) != 2:  
-                    raise ValueError('Error: game state incomplete')
-                
-                for_value = data.split()[1].split(',')
 
-                if len(for_value) == 1:
-                    for_value = for_value[0]
-
-                if for_key in ASTEROID_TYPES:
-                    if for_key in self.game_dict.keys():
-                        self.game_dict[for_key].append( for_value )
-                    else:
-                        self.game_dict[for_key] = []
-                        self.game_dict[for_key].append( for_value )
-                else:
-                    self.game_dict[for_key] = for_value
-            
+                # key_name: str
+                lines.append(data.replace('\n', ''))
                 
             f.close()
         except FileNotFoundError:
-            raise FileNotFoundError('Error: unable to open {}'.format(file_path))
+            raise FileNotFoundError('Error: unable to open {}'.format(game_state_filename))
             
-            
-        
-        #! debug code
-        if False:
-        #if True:
-            for key, val in self.game_dict.items():
-                print(key, val)
-        
-            
-    def is_numeric(self, key):
-        if self.game_dict[key].isnumeric():
-            self.game_dict[key] = int(self.game_dict[key])
-            return True
-        else:
-            #! code line 명시 필요  
-            raise ValueError('Error: invalid data type in line <line number>')
+        if len(lines) == 0:
+            raise ValueError('Error: game state incomplete')
 
-    def is_valid_list(self, key):
-        if not isinstance(self.game_dict[key], list):
-            #! code line 명시 필요  
-            raise ValueError('Error: expecting a key and value in line <line number>')
-                    
-            if len(self.game_dict[key]) != 4:
+        offset = 0
+        for i, ref_key in enumerate(GAME_STATE_KEYS):
+            # 1-1. check the number of inputs
+
+            if len(lines[i+offset].split()) != 2:
                 raise ValueError('Error: expecting a key and value in line <line number>')
+            key, value = lines[i+offset].split()
+
+            # 1-2. check unexpected keys or game state incomplete
+            if ref_key != key:
+                if key in GAME_STATE_KEYS or key in ITER_OBJECTS:
+                    raise ValueError(f'Error: unexpected key: {key} in line <line number>')
+                else:
+                    raise ValueError('Error: game state incomplete')
+            
+            # 2. check value 
+            if ref_key in ITER_OBJECTS + ['spaceship']:
+                length_should_be = 4
+            else:
+                length_should_be = 1
+
+            # 2-1 value length
+            if len(value.split(',')) != length_should_be:
+                raise ValueError('Error: expecting a key and value in line <line number>')
+            # 2-2 value type
+            if length_should_be == 1:
+                try:
+                    value = int(value)
+                    if value < 0:
+                        raise ValueError('Error: invalid data type in line <line number>')    
+                except:
+                    raise ValueError('Error: invalid data type in line <line number>')
+            elif length_should_be == 4:
+                try:
+                    value = [val for val in value.split(',')]
+                    value[0] = float(value[0])
+                    value[1] = float(value[1])
+                    value[2] = float(value[2])
+                    value[3] = float(value[3])
+                except:
+                    raise ValueError('Error: invalid data type in line <line number>')                            
+            
+            # internal iter. -> check asteroids, upcoming_asteroids, bullets 
+            self.game_dict[key] = value
+            if ref_key in COUNT_PARAM:
+                
+
+                if ref_key == 'asteroids_count':
+                    possible_names = CURRENT_ASTEROIDS
+                elif ref_key == 'bullets_count':
+                    possible_names = ['bullet']
+                elif ref_key == 'upcoming_asteroids_count':
+                    possible_names = UPCOMING_ASTEROIDS
+                else:
+                    assert False
+
+                # iter. object
+                self.game_dict[ref_key] = []
+                for t in range(1, value+1):
+                    obj_key, obj_value = lines[i+offset+t].split()
                     
-            try:
-                self.game_dict[key][0] = float(self.game_dict[key][0])
-                self.game_dict[key][1] = float(self.game_dict[key][1])
-                self.game_dict[key][2] = int(self.game_dict[key][2])
-                self.game_dict[key][3] = int(self.game_dict[key][3])
-            except:
-                #! code line 명시 필요  
-                raise ValueError('Error: invalid data type in line <line number>')
+                    # check key
+                    if not obj_key in possible_names:
+                        if obj_key in ALL_GAME_KEYS:
+                            raise ValueError(f'Error: unexpected key: {obj_key} in line <line number>')
+                        else:
+                            raise ValueError('Error: game state incomplete')
+                    
+                    # check value
+                    if 4 != len(obj_value.split(',')):
+                        raise ValueError('Error: expecting a key and value in line <line number>')
+
+                    try:
+                        obj_value = [val for val in obj_value.split(',')]
+                        obj_value[0] = float(obj_value[0])
+                        obj_value[1] = float(obj_value[1])
+                        obj_value[2] = float(obj_value[2])
+                        obj_value[3] = float(obj_value[3])
+                    except:
+                        raise ValueError('Error: invalid data type in line <line number>')                            
+
+                    
+                    self.game_dict[ref_key].append([obj_key] + obj_value)
+                offset += value
+
+        '''
+        print('ok')
+        for key in self.game_dict:
+            print(key, self.game_dict[key])
+        exit(1)  
+        '''
+        
+  
 
     
-    def import_state(self, game_state_filename):
-        self.parse_args(game_state_filename)
-
-        # incomplete check and key-val pair check
-        for key in GAME_STATE_KEYS:
-            if not key in self.game_dict.keys():
-                raise ValueError('Error: game state incomplete')
-                
-        # 1. game width, height 
-        for key in GAME_STATE_KEYS:
-            if key == 'width': 
-                if self.is_numeric(key):
-                    self.width = self.game_dict[key]
-            elif key == 'height':
-                if self.is_numeric(key):
-                    self.height = self.game_dict[key]
-            elif key in ['score', 'fuel', 'asteroids_count', 'bullets_count', 'upcoming_asteroids_count']:
-                self.is_numeric(key)
-
-            elif key == 'spaceship':
-                self.is_valid_list(key)
-            
-            elif key in ASTEROID_TYPES:
-                self.is_valid_list(key)
-                self.object_dict[key].append( self.game_dict[key] )
-
 
     def export_state(self, game_state_filename):
         pass
-        
-        
+        '''
+        f1 = open(game_state_filename, 'w')
+        for key in self.game_dict:
+            if isinstance(self.game_dict[key], list):
+                value_str = ''
+                for val_idx in range(len(self.game_dict[key])):
+                    value_str += str(self.game_dict[key][val_idx])
+                    if val_idx == len(self.game_dict[key])-1:
+                        continue
+                    value_str += ','
+                a = '{} {}\n'.format(key, value_str)
+                f1.write(a)
+
+            else:
+                a = '{} {}\n'.format(key, str(self.game_dict[key]))
+                f1.write(a)
+        '''
         
 
     def run_game(self):
@@ -184,10 +226,3 @@ class Engine:
 #***************************************#
 # game = Engine('examples/game_state_good.txt', Player, GUI)
 # game.import_state()
-
-if __name__ == '__main__':
-
-
-
-    file_path = 'examples/game_state_test.txt'
-    game = Engine(file_path, Player, GUI)
