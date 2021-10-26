@@ -17,25 +17,36 @@ class Player:
         '''
 
     def action(self, spaceship, asteroid_ls, bullet_ls, fuel, score):
-        thrust = False
+
+        self.spaceship = spaceship
+        self.asteroid_ls = asteroid_ls
+        self.bullet_ls = bullet_ls
+        self.fuel = fuel
+        self.score = score
+        
+
+        thrust = True
         left = False
         right = False
         bullet = False
 
-        flag1, act = self.is_caution()
-        if flag1:
-            if act == 'forward':
-                thrust = True
-        else:
-            # 공격 or 이동 (사냥하러)
-            flag2 = self.is_bullet_range()
-            if flag2:
-                bullet = True
 
-            else:
-                flag3, act = self.hunt()
-                if act == 'forward':
-                    thursh = True
+
+
+        # flag1, act = self.is_caution()
+        # if flag1:
+        #     if act == 'forward':
+        #         thrust = True
+        # else:
+        #     # 공격 or 이동 (사냥하러)
+        #     flag2 = self.is_bullet_range()
+        #     if flag2:
+        #         bullet = True
+
+        #     else:
+        #         flag3, act = self.hunt()
+        #         if act == 'forward':
+        #             thursh = True
 
 
         return (thrust, left, right, bullet)

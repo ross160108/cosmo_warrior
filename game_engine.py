@@ -187,7 +187,8 @@ class Engine:
 
 
         #! debug code 
-        from inputimeout import inputimeout, TimeoutOccurred
+        if self.debug:
+            from inputimeout import inputimeout, TimeoutOccurred
 
         asteroid_list = [obj1, obj2]
         bullet_list = []
@@ -209,8 +210,8 @@ class Engine:
                     spaceship.turn_left()
                 elif key == 'd':
                     spaceship.turn_right()
-                elif key == 's':
-                    pass # TODO : bullet
+                # elif key == 's':
+                #     pass # TODO : bullet
                 elif key == 'q':
                     break
                 key = None
@@ -221,13 +222,14 @@ class Engine:
                     spaceship.move_forward()
                 elif left:
                     spaceship.turn_left()
-            # 2. Process game logic
-            #obj1.move_forward()
-            #obj2.move_forward()
 
-            for asteroid in asteroid_list:
-                if spaceship.collide_with(asteroid):
-                    score -= 50
+            # # 2. Process game logic
+            # #obj1.move_forward()
+            # #obj2.move_forward()
+
+            # for asteroid in asteroid_list:
+            #     if spaceship.collide_with(asteroid):
+            #         score -= 50
 
             # 3. Draw the game state on screen using the GUI class
                                  
@@ -245,13 +247,25 @@ class Engine:
     # You can add additional methods if required
 
 
+
+
+
 #***************************************#
 # game = Engine('examples/game_state_good.txt', Player, GUI)
-# game.import_state()
-
-if __name__ == '__main__':
 
 
 
-    file_path = 'examples/game_state_test.txt'
-    game = Engine(file_path, Player, GUI)
+
+# game = Engine('examples/game_state_good.txt', Player, GUI)
+# # game.import_state()
+
+# if __name__ == '__main__':
+
+
+
+#     file_path = 'examples/game_state_test.txt'
+#     game = Engine(file_path, Player, GUI)
+
+
+
+
