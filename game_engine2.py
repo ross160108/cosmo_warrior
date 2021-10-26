@@ -2,8 +2,10 @@ import config
 from space_object import SpaceObject
 
 
-
-
+#!! 지워야됨
+from player import Player
+from gui import GUI
+#!!
 
 GAME_STATE_KEYS = [
     'width',
@@ -41,7 +43,7 @@ class Engine:
         self.import_state(game_state_filename)
         
         
-        
+        exit(1)
         self.player = player_class()
         self.GUI = gui_class(self.width, self.height)
 
@@ -90,7 +92,6 @@ class Engine:
     def is_numeric(self, key):
         if self.game_dict[key].isnumeric():
             self.game_dict[key] = int(self.game_dict[key])
-            return True
         else:
             #! code line 명시 필요  
             raise ValueError('Error: invalid data type in line <line number>')
@@ -154,7 +155,7 @@ class Engine:
 
 
         #! debug code 
-        
+        from inputimeout import inputimeout, TimeoutOccurred
 
         asteroid_list = [obj1, obj2]
         bullet_list = []
@@ -164,6 +165,29 @@ class Engine:
         while True:
             # 1. Receive player input
             
+            try:
+                key = inputimeout('', timeout=10)
+            except:
+                pass
+
+            # spaceship control
+            if key == 'w':           
+                spaceship.move_forward()
+            elif key == 'a':
+                spaceship.turn_left()
+            elif key == 'd':
+                spaceship.turn_right()
+            elif key == 'q':
+                break
+            key = None
+            
+            # 2. Process game logic
+            #obj1.move_forward()
+            #obj2.move_forward()
+
+            for asteroid in asteroid_list:
+                if spaceship.collide_with(asteroid):
+                    score -= 50
 
             # 3. Draw the game state on screen using the GUI class
                                  
