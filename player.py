@@ -7,8 +7,14 @@ class Player:
 
     # TODO
     def is_caution(self):
-        return False, None
+        # return False, None
+
         
+
+
+        for _ in range(t):
+            snx, sny = self.expect( )
+
         '''
         
 
@@ -17,6 +23,10 @@ class Player:
         '''
 
     def action(self, spaceship, asteroid_ls, bullet_ls, fuel, score):
+
+        nx, ny = obj.get_xy()
+        for obj in asteroid_ls: #self.asteroid_list = [obj1, obj2]
+            nx, ny = obj.expect(nx, ny)
 
         self.spaceship = spaceship
         self.asteroid_ls = asteroid_ls

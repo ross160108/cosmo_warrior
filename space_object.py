@@ -44,7 +44,11 @@ class SpaceObject:
         if self.angle < 0:
             self.angle += 360
         
-        
+    def expect(self, x, y):        
+        nx = x + config.speed[self.obj_type] * math.cos(math.radians(self.angle))
+        ny = y + config.speed[self.obj_type] * math.sin(math.radians(-self.angle))
+
+        return (nx,ny)
 
 
     def move_forward(self):
@@ -97,6 +101,15 @@ class SpaceObject:
         #! colliding/not
         # print(config.radius[self.obj_type])
         # print(config.radius[other.obj_type])
+        # if (self.width - abs(self.x - other.x) < config.radius[self.obj_type] + config.radius[other.obj_type]):
+        #     return True
+
+        # if (self.height - abs(self.y - other.y) < config.radius[self.obj_type] + config.radius[other.obj_type]):
+        #     return True
+        
+        if (self.height - abs(self.y - other.y) <= config.radius[self.obj_type] + config.radius[other.obj_type]) and (self.width - abs(self.x - other.x) < config.radius[self.obj_type] + config.radius[other.obj_type]):
+            return True
+        
         
         if config.radius[self.obj_type] + config.radius[other.obj_type] >= dist:
             return True

@@ -2,9 +2,6 @@ import config
 from space_object import SpaceObject
 
 
-
-
-
 GAME_STATE_KEYS = [
     'width',
     'height',
@@ -52,6 +49,8 @@ class Engine:
         self.height = self.game_dict['height']
         self.GUI = gui_class(self.width, self.height)
 
+        self.export_state('./a.txt')
+
     def import_state(self, game_state_filename):
         lines = []
         try:
@@ -76,7 +75,7 @@ class Engine:
             # 1-1. check the number of inputs
 
             if len(lines[i+offset].split()) != 2:
-                raise ValueError('Error: expecting a key and value in line <line number>')
+                raise ValueError(f'Error: expecting a key and value in line <line number>')
             key, value = lines[i+offset].split()
 
             # 1-2. check unexpected keys or game state incomplete
@@ -94,7 +93,8 @@ class Engine:
 
             # 2-1 value length
             if len(value.split(',')) != length_should_be:
-                raise ValueError('Error: expecting a key and value in line <line number>')
+                raise ValueError('Error: expecting a key and value in line <!=length_should_be>')
+                #raise ValueError('Error: invalid data type in line <line number>')
             # 2-2 value type
             if length_should_be == 1:
                 try:
@@ -108,8 +108,8 @@ class Engine:
                     value = [val for val in value.split(',')]
                     value[0] = float(value[0])
                     value[1] = float(value[1])
-                    value[2] = float(value[2])
-                    value[3] = float(value[3])
+                    value[2] = int(value[2])
+                    value[3] = int(value[3])
                 except:
                     raise ValueError('Error: invalid data type in line <line number>')                            
             
@@ -137,18 +137,18 @@ class Engine:
                         if obj_key in ALL_GAME_KEYS:
                             raise ValueError(f'Error: unexpected key: {obj_key} in line <line number>')
                         else:
-                            raise ValueError('Error: game state incomplete')
+                            raise ValueError(f'Error: unexpected key: {obj_key} in line <line number>')
                     
                     # check value
                     if 4 != len(obj_value.split(',')):
-                        raise ValueError('Error: expecting a key and value in line <line number>')
+                        raise ValueError('Error: invalid data type in line <line number>')
 
                     try:
                         obj_value = [val for val in obj_value.split(',')]
                         obj_value[0] = float(obj_value[0])
                         obj_value[1] = float(obj_value[1])
-                        obj_value[2] = float(obj_value[2])
-                        obj_value[3] = float(obj_value[3])
+                        obj_value[2] = int(obj_value[2])
+                        obj_value[3] = int(obj_value[3])
                     except:
                         raise ValueError('Error: invalid data type in line <line number>')                            
 
@@ -165,27 +165,38 @@ class Engine:
         
   
 
-    
+    def connect_by_adding_comma(self, list_data):
+        ret = ''
+        for data in list_data:
+            ret += str(data)+','
+        return ret[:-1] 
 
-    def export_state(self, game_state_filename):
-        pass
-        '''
-        f1 = open(game_state_filename, 'w')
-        for key in self.game_dict:
+    def export_state(self, game_state_filename):        
+        try:
+            f = open(game_state_filename, 'w')
+        except:
+            pass
+        
+        for key in GAME_STATE_KEYS:
             if isinstance(self.game_dict[key], list):
-                value_str = ''
-                for val_idx in range(len(self.game_dict[key])):
-                    value_str += str(self.game_dict[key][val_idx])
-                    if val_idx == len(self.game_dict[key])-1:
-                        continue
-                    value_str += ','
-                a = '{} {}\n'.format(key, value_str)
-                f1.write(a)
-
+                if key in COUNT_PARAM:
+                    value = str(len(self.game_dict[key]))
+                else:
+                    value = self.connect_by_adding_comma(self.game_dict[key])
+                f.write(key+' '+value+'\n')
             else:
-                a = '{} {}\n'.format(key, str(self.game_dict[key]))
-                f1.write(a)
-        '''
+                f.write(key+' '+str(self.game_dict[key])+'\n')
+
+
+            # bullet, upcoming/current asteroids, 
+            if key in COUNT_PARAM:
+                for obj in self.game_dict[key]:
+                    obj_key = obj[0]
+                    obj_value = self.connect_by_adding_comma(obj[1:])
+
+                    f.write(obj_key+' '+obj_value+'\n')
+            
+        f.close()
         
 
     def run_game(self):
@@ -203,8 +214,29 @@ class Engine:
         score = 0
         fuel = 100
 
+        print(self.game_dict.keys())
         while True:
-            # 1. Receive player input
+            #! 1. Receive player input
+
+
+            
+            #! 2. Process game logic
+            # Thrust, anticlock, clock, fire_bullet
+            #(True, False, False, False)
+
+            if Player.action()[2] .....
+            update position --> just call the move_forward()?
+            
+            bullet id control
+
+
+
+
+
+            if self.fuel < config.shoot_fuel_threshold:
+                print('Cannot shoot due to low fuel')
+            else:
+                
             
 
             # 3. Draw the game state on screen using the GUI class
@@ -216,13 +248,17 @@ class Engine:
             # - no more asteroids are available
 
             #break
-
         # Display final score
         # self.GUI.finish(???)
 
     # You can add additional methods if required
+    
+
+
+
 
 
 #***************************************#
 # game = Engine('examples/game_state_good.txt', Player, GUI)
 # game.import_state()
+
